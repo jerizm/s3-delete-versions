@@ -1,12 +1,44 @@
 #!/usr/bin/env node
 
-constAWS = require('aws-sdk');
+const prompt = require('prompt');
+const AWS = require('aws-sdk');
 
 const s3 = new AWS.S3();
 
-const bucketName = process.env.BUCKETNAME;
+let bucketName = process.env.BUCKETNAME;
 
 const maxKeys = 5;
+
+const deleteObjects = async (continuationToken) => {
+  const params = {
+    Bucket: bucketName,
+    MaxKeys: 1000
+  };
+
+  if (continuationToken) {
+    params.ContinuationToken = continuationToken;
+  }
+  const content = await s3.listObjectsV2(params).promise();
+
+  const toDelete = content.Contents.map(content => {
+    return { Key: content.Key };
+  });
+
+  if (toDelete.length > 0) {
+    const deleteParams = {
+      Bucket: bucketName,
+      Delete: {
+        Objects: toDelete,
+        Quiet: false
+      }
+    };
+    const deleteResult = await s3.deleteObjects(deleteParams).promise();
+  }
+  if (content.NextContinuationToken) {
+    console.log(content.Contents[0].Key);
+    deleteObjects(content.NextContinuationToken);
+  }
+};
 
 const deleteObjectVersions = async (keyMarker, versionId) => {
   const params = {
@@ -54,4 +86,19 @@ const deleteObjectVersions = async (keyMarker, versionId) => {
   }
 };
 
-deleteObjectVersions();
+prompt.start();
+
+console.log('WARNING: This will delete all objects in your bucket!!!');
+
+prompt.get([{
+  name: 'bucketname',
+  required: true,
+  conform: (val) => {
+    return true;
+  }
+}], (err, result) => {
+  bucketName = result.bucketname;
+  deleteObjects();
+  deleteObjectVersions();
+});
+

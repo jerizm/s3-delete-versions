@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.104.0"
+    "aws-sdk": "^2.104.0",
+    "prompt": "^1.0.0"
   }
 }
