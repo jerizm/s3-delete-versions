@@ -1,0 +1,14 @@
+{
+  "name": "s3-delete-versions-markers",
+  "version": "1.0.0",
+  "description": "delete all versions and markers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.104.0"
+  }
+}
